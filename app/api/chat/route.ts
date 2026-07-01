@@ -4,8 +4,8 @@ import path from 'path'
 
 // ---- RATE LIMITING ----
 const rateLimit = new Map<string, { count: number; timestamp: number }>()
-const RATE_LIMIT_MAX = 20 // max requests
-const RATE_LIMIT_WINDOW = 60 * 1000 // per 60 seconds
+const RATE_LIMIT_MAX = 20
+const RATE_LIMIT_WINDOW = 60 * 1000
 
 function isRateLimited(ip: string): boolean {
   const now = Date.now()
@@ -22,13 +22,13 @@ function isRateLimited(ip: string): boolean {
 // ---- INPUT SANITIZATION ----
 function sanitizeInput(input: string): string {
   return input
-    .replace(/<[^>]*>/g, '') // strip HTML
-    .replace(/[`${}]/g, '')  // strip code injection chars
-    .slice(0, 500)           // max 500 characters
+    .replace(/<[^>]*>/g, '')
+    .replace(/[`${}]/g, '')
+    .slice(0, 500)
     .trim()
 }
 
-// ---- TOPIC GUARD ----
+// ---- PROMPT INJECTION GUARD ----
 const BLOCKED_TOPICS = [
   'ignore previous', 'ignore all', 'forget instructions',
   'you are now', 'act as', 'jailbreak', 'prompt injection',
@@ -41,6 +41,7 @@ function isPromptInjection(input: string): boolean {
   return BLOCKED_TOPICS.some(topic => lower.includes(topic))
 }
 
+// ---- OFF TOPIC GUARD ----
 const MOUNTAIN_HOUSE_TOPICS = [
   'mountain house', 'ac', 'air condition', 'heat', 'plumb', 'electric',
   'garden', 'lawn', 'fridge', 'appliance', 'repair', 'fix', 'school',
@@ -68,7 +69,7 @@ async function searchMountainHouse(query: string) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        q: `${query} Mountain House CA`,
+        q: `${query} Mountain House CA 95391`,
         num: 3,
       }),
     })
@@ -84,10 +85,8 @@ async function searchMountainHouse(query: string) {
 
 // ---- MAIN HANDLER ----
 export async function POST(req: NextRequest) {
-  // Get IP for rate limiting
   const ip = req.headers.get('x-forwarded-for') ?? 'unknown'
 
-  // Rate limit check
   if (isRateLimited(ip)) {
     return NextResponse.json(
       { reply: 'You are sending too many messages. Please wait a minute and try again.' },
@@ -97,29 +96,24 @@ export async function POST(req: NextRequest) {
 
   const { messages } = await req.json()
 
-  // Validate messages exist
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json({ reply: 'Invalid request.' }, { status: 400 })
   }
 
-  // Get and sanitize last user message
   const lastMessage = sanitizeInput(messages[messages.length - 1].content ?? '')
 
-  // Block prompt injection attempts
   if (isPromptInjection(lastMessage)) {
     return NextResponse.json({
       reply: "I'm just a simple Mountain House assistant! I can't help with that. Ask me about local services or events instead 😊"
     })
   }
 
-  // Block off-topic questions
   if (isOffTopic(lastMessage)) {
     return NextResponse.json({
       reply: "I'm only able to help with Mountain House, CA related topics — like local services, events, and community info. Try asking me something local! 🏘️"
     })
   }
 
-  // Read from data.json
   const dataPath = path.join(process.cwd(), 'data.json')
   const raw = fs.readFileSync(dataPath, 'utf-8')
   const data = JSON.parse(raw)
@@ -132,12 +126,15 @@ export async function POST(req: NextRequest) {
     `- ${a.title}: ${a.details}`
   ).join('\n')
 
-  // Web search
   const searchResults = await searchMountainHouse(lastMessage)
 
   const systemPrompt = `You are a friendly neighborhood assistant for ${data.city}, ${data.state}.
 You talk like a helpful neighbor who knows everyone in town.
 You ONLY discuss topics related to Mountain House, CA. Nothing else.
+Always answer in a short, clean list format like this:
+- Business Name — what they do
+  📞 phone number
+Keep answers short and sharp. No long paragraphs.
 You NEVER give medical, legal, or financial advice.
 You NEVER share personal information about anyone.
 You NEVER make guarantees about service quality or pricing.
@@ -151,16 +148,14 @@ ${announcements}
 Local Service Providers:
 ${providers}
 
-Web Search Results for "${lastMessage} Mountain House CA":
+Web Search Results for "${lastMessage} Mountain House CA 95391":
 ${searchResults || 'No results found.'}`
 
-  // Sanitize all messages
   const safeMessages = messages.map((m: any) => ({
     role: m.role === 'assistant' ? 'assistant' : 'user',
     content: sanitizeInput(m.content ?? '')
   }))
 
-  // Try Ollama first
   try {
     const ollamaRes = await fetch(`${process.env.OLLAMA_BASE_URL}/v1/chat/completions`, {
       method: 'POST',
@@ -182,7 +177,6 @@ ${searchResults || 'No results found.'}`
     console.log('Ollama unavailable, falling back to OpenRouter')
   }
 
-  // Fallback to OpenRouter
   try {
     const openRouterRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
