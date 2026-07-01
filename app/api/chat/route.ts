@@ -2,6 +2,30 @@ import { NextRequest, NextResponse } from 'next/server'
 import fs from 'fs'
 import path from 'path'
 
+// Search the web for Mountain House specific info
+async function searchMountainHouse(query: string) {
+  try {
+    const res = await fetch('https://google.serper.dev/search', {
+      method: 'POST',
+      headers: {
+        'X-API-KEY': process.env.SERPER_API_KEY!,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        q: `${query} Mountain House CA`,
+        num: 3,
+      }),
+    })
+    const data = await res.json()
+    const results = data.organic?.slice(0, 3).map((r: any) =>
+      `${r.title}: ${r.snippet}`
+    ).join('\n')
+    return results || ''
+  } catch (e) {
+    return ''
+  }
+}
+
 export async function POST(req: NextRequest) {
   const { messages } = await req.json()
 
@@ -10,7 +34,7 @@ export async function POST(req: NextRequest) {
   const raw = fs.readFileSync(dataPath, 'utf-8')
   const data = JSON.parse(raw)
 
-  // Build the system prompt from data.json
+  // Build providers and announcements from data.json
   const providers = data.providers.map((p: any) =>
     `- ${p.name}: ${p.service}. Call ${p.phone}`
   ).join('\n')
@@ -19,20 +43,29 @@ export async function POST(req: NextRequest) {
     `- ${a.title}: ${a.details}`
   ).join('\n')
 
+  // Get the last user message
+  const lastMessage = messages[messages.length - 1].content
+
+  // Search the web for Mountain House specific info
+  const searchResults = await searchMountainHouse(lastMessage)
+
   const systemPrompt = `You are a friendly neighborhood assistant for ${data.city}, ${data.state}. 
 You talk like a helpful neighbor who knows everyone in town.
-You ONLY help with local services and community info for ${data.city}.
-You ONLY talk about information that is explicitly listed below.
-Do NOT make up events, providers, or any information that is not in this list.
-If you don't have the answer in the data below, say "I don't have that info yet but check back soon!"
-If someone asks about something unrelated to Mountain House, politely redirect them.
+You ONLY help with topics related to Mountain House, CA.
+You NEVER answer questions unrelated to Mountain House — politely redirect them.
 When recommending a provider, mention their name, what they do, and phone number in a warm friendly way.
+If web search results are provided, use them to answer but ONLY mention Mountain House relevant info.
+If you find info from last year, give an estimate for this year and mention it's based on last year.
+Always clarify if something is an estimate vs confirmed info.
 
 Local Announcements:
 ${announcements}
 
 Local Service Providers:
-${providers}`
+${providers}
+
+Web Search Results for "${lastMessage} Mountain House CA":
+${searchResults || 'No results found.'}`
 
   // Try Ollama first (only works locally)
   try {
