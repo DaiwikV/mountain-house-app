@@ -66,7 +66,7 @@ ${providers}`
         'X-Title': 'Mountain House App',
       },
       body: JSON.stringify({
-        model: 'meta-llama/llama-3.2-3b-instruct:free',
+        model: 'google/gemma-3-4b-it:free',
         messages: [{ role: 'system', content: systemPrompt }, ...messages],
       }),
     })
