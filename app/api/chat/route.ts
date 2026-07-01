@@ -66,7 +66,7 @@ ${providers}`
         'X-Title': 'Mountain House App',
       },
       body: JSON.stringify({
-        model: 'qwen/qwen3-8b:free',
+        model: 'openrouter/free',
         messages: [{ role: 'system', content: systemPrompt }, ...messages],
       }),
     })
