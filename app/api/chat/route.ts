@@ -34,7 +34,7 @@ ${announcements}
 Local Service Providers:
 ${providers}`
 
-  // Try Ollama first (local)
+  // Try Ollama first (only works locally)
   try {
     const ollamaRes = await fetch(`${process.env.OLLAMA_BASE_URL}/v1/chat/completions`, {
       method: 'POST',
@@ -43,30 +43,44 @@ ${providers}`
         model: 'llama3.2:3b',
         messages: [{ role: 'system', content: systemPrompt }, ...messages],
       }),
+      signal: AbortSignal.timeout(5000),
     })
 
     if (ollamaRes.ok) {
       const result = await ollamaRes.json()
-      return NextResponse.json({ reply: result.choices[0].message.content, source: 'ollama' })
+      if (result?.choices?.[0]?.message?.content) {
+        return NextResponse.json({ reply: result.choices[0].message.content, source: 'ollama' })
+      }
     }
   } catch (e) {
     console.log('Ollama unavailable, falling back to OpenRouter')
   }
 
   // Fallback to OpenRouter
-  const openRouterRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      'Content-Type': 'application/json',
-      'X-Title': 'Mountain House App',
-    },
-    body: JSON.stringify({
-      model: 'meta-llama/llama-3.2-3b-instruct:free',
-      messages: [{ role: 'system', content: systemPrompt }, ...messages],
-    }),
-  })
+  try {
+    const openRouterRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'X-Title': 'Mountain House App',
+      },
+      body: JSON.stringify({
+        model: 'meta-llama/llama-3.2-3b-instruct:free',
+        messages: [{ role: 'system', content: systemPrompt }, ...messages],
+      }),
+    })
 
-  const result = await openRouterRes.json()
-  return NextResponse.json({ reply: result.choices[0].message.content, source: 'openrouter' })
+    const result = await openRouterRes.json()
+    console.log('OpenRouter result:', JSON.stringify(result))
+
+    if (result?.choices?.[0]?.message?.content) {
+      return NextResponse.json({ reply: result.choices[0].message.content, source: 'openrouter' })
+    }
+
+    return NextResponse.json({ reply: 'Sorry, I could not get a response. Please try again!', source: 'error' })
+  } catch (e) {
+    console.log('OpenRouter error:', e)
+    return NextResponse.json({ reply: 'Sorry, something went wrong. Please try again!', source: 'error' })
+  }
 }
