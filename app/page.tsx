@@ -68,7 +68,7 @@ export default function Home() {
             <div className="flex-1 flex flex-col items-center justify-center text-center py-16 gap-6">
               <div className="w-16 h-16 rounded-2xl bg-[#1a3a5c] flex items-center justify-center text-3xl">🏘️</div>
               <div>
-                <h2 className="text-2xl font-semibold text-white mb-2">Your Mountain House Buddy</h2>
+                <h2 className="text-2xl font-semibold text-white mb-2">Your Mountain House Neighbor</h2>
                 <p className="text-[#8899aa] text-sm max-w-md">Ask me anything about local services, events, and community info in Mountain House, CA.</p>
               </div>
               <div className="grid grid-cols-2 gap-2 w-full max-w-md">
@@ -158,34 +158,37 @@ export default function Home() {
             <div className="text-center">
               <div className="w-16 h-16 rounded-2xl bg-[#1a3a5c] flex items-center justify-center text-3xl mx-auto mb-4">🏘️</div>
               <h2 className="text-2xl font-semibold text-white mb-2">About Mountain House Assistant</h2>
-              <p className="text-[#8899aa] text-sm max-w-md mx-auto">Your friendly AI neighbor for everything Mountain House, CA.</p>
+              <p className="text-[#8899aa] text-sm max-w-md mx-auto">Built by a neighbor, for the neighborhood.</p>
             </div>
 
             <div className="grid gap-4">
+
               <div className="bg-[#0d1117] border border-[#1e2a3a] rounded-2xl p-6">
-                <h3 className="text-white font-medium mb-2">🤝 What We Do</h3>
-                <p className="text-[#8899aa] text-sm leading-relaxed">We connect Mountain House residents with trusted local service providers. Whether you need AC repair, plumbing, gardening, or appliance fixes — we know who to call.</p>
+                <h3 className="text-white font-medium mb-2">👋 The Story</h3>
+                <p className="text-[#8899aa] text-sm leading-relaxed">This started as a summer break project by a 15 year old who lives right here in Mountain House. Tired of neighbors not knowing who to call when something breaks, he built a simple way to find trusted local help — no googling, no scrolling through random results, just real people from the community.</p>
               </div>
 
               <div className="bg-[#0d1117] border border-[#1e2a3a] rounded-2xl p-6">
-                <h3 className="text-white font-medium mb-2">✅ Verified Listings Only</h3>
-                <p className="text-[#8899aa] text-sm leading-relaxed">Every service provider on our platform is verified and based in Mountain House. No outsiders, no fake listings — just your real neighbors.</p>
+                <h3 className="text-white font-medium mb-2">🏘️ What This Is</h3>
+                <p className="text-[#8899aa] text-sm leading-relaxed">A neighborhood assistant built specifically for Mountain House. Ask it who fixes AC, when school starts, what's happening in the community — it only knows Mountain House stuff, because that's all that matters here.</p>
               </div>
 
               <div className="bg-[#0d1117] border border-[#1e2a3a] rounded-2xl p-6">
-                <h3 className="text-white font-medium mb-2">📍 100% Mountain House</h3>
-                <p className="text-[#8899aa] text-sm leading-relaxed">We only answer questions about Mountain House, CA. Local events, school dates, community info, and local services — that's our lane.</p>
+                <h3 className="text-white font-medium mb-2">✅ Real People, Real Listings</h3>
+                <p className="text-[#8899aa] text-sm leading-relaxed">Every provider listed here is personally verified and actually based in Mountain House. No random results from Tracy or Stockton — just your actual neighbors who do this for a living.</p>
               </div>
 
               <div className="bg-[#0d1117] border border-[#1e2a3a] rounded-2xl p-6">
-                <h3 className="text-white font-medium mb-2">💼 List Your Business</h3>
-                <p className="text-[#8899aa] text-sm leading-relaxed">Are you a local service provider in Mountain House? Get listed and start receiving referrals from your neighbors. Contact us to get featured.</p>
+                <h3 className="text-white font-medium mb-2">💼 Want to Be Listed?</h3>
+                <p className="text-[#8899aa] text-sm leading-relaxed">If you're a local service provider in Mountain House, reach out to get added. We're building the go-to resource for this community — one neighbor at a time.</p>
               </div>
+
             </div>
 
             <div className="text-center text-[#4a5568] text-xs">
-              <p>Mountain House Buddy</p>
+              <p>Mountain House Community Assistant</p>
               <p className="mt-1">Serving Mountain House, CA 95391</p>
+              <p className="mt-1">Made with ❤️ by a Mountain House kid, summer 2026</p>
             </div>
 
           </div>
