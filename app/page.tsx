@@ -68,7 +68,7 @@ export default function Home() {
             <div className="flex-1 flex flex-col items-center justify-center text-center py-16 gap-6">
               <div className="w-16 h-16 rounded-2xl bg-[#1a3a5c] flex items-center justify-center text-3xl">🏘️</div>
               <div>
-                <h2 className="text-2xl font-semibold text-white mb-2">Your Mountain House Neighbor</h2>
+                <h2 className="text-2xl font-semibold text-white mb-2">Your Mountain House Buddy</h2>
                 <p className="text-[#8899aa] text-sm max-w-md">Ask me anything about local services, events, and community info in Mountain House, CA.</p>
               </div>
               <div className="grid grid-cols-2 gap-2 w-full max-w-md">
@@ -184,7 +184,7 @@ export default function Home() {
             </div>
 
             <div className="text-center text-[#4a5568] text-xs">
-              <p>Mountain House Community Assistant</p>
+              <p>Mountain House Buddy</p>
               <p className="mt-1">Serving Mountain House, CA 95391</p>
             </div>
 
