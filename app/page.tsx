@@ -188,7 +188,6 @@ export default function Home() {
             <div className="text-center text-[#4a5568] text-xs">
               <p>Mountain House Community Assistant</p>
               <p className="mt-1">Serving Mountain House, CA 95391</p>
-              <p className="mt-1">Made with ❤️ by a Mountain House kid, summer 2026</p>
             </div>
 
           </div>
