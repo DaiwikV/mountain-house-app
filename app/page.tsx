@@ -86,6 +86,16 @@ export default function Home() {
           </button>
         </nav>
       </header>
+ {/* SUPPORT BANNER */}
+      <div className="bg-[#0d1117] border-b border-[#1e2a3a] px-6 py-2 flex items-center justify-between">
+        <p className="text-[#8899aa] text-xs">Enjoying Mountain House Assistant?</p>
+        <button
+          onClick={() => setPage('donate')}
+          className="text-xs px-3 py-1 rounded-lg border border-[#1e2a3a] text-[#8899aa] hover:border-[#4a9eff] hover:text-white transition-all"
+        >
+          Support Us
+        </button>
+      </div>
 
       {/* CHAT PAGE */}
       {page === 'chat' && (
