@@ -7,7 +7,10 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [page, setPage] = useState<'chat' | 'about'>('chat')
+  const [page, setPage] = useState<'chat' | 'about' | 'donate'>('chat')
+  const [amount, setAmount] = useState(5)
+  const [custom, setCustom] = useState('')
+  const [donateLoading, setDonateLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -32,6 +35,18 @@ export default function Home() {
     setLoading(false)
   }
 
+  const handleDonate = async (donateAmount: number) => {
+    setDonateLoading(true)
+    const res = await fetch('/api/donate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: donateAmount }),
+    })
+    const data = await res.json()
+    if (data.url) window.location.href = data.url
+    setDonateLoading(false)
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
 
@@ -42,7 +57,12 @@ export default function Home() {
           <div>
             <h1 className="text-white font-semibold text-sm leading-none">Mountain House</h1>
             <p className="text-[#4a9eff] text-xs mt-0.5">Community Assistant</p>
-            <a href="/donate" className="text-[#ff6b6b] text-xs mt-0.5 hover:underline">❤️ Donate</a>
+            <button
+              onClick={() => setPage('donate')}
+              className="text-[#8899aa] text-xs mt-0.5 hover:text-white transition-all block"
+            >
+              Support Us
+            </button>
           </div>
         </div>
         <nav className="flex items-center gap-1">
@@ -58,6 +78,12 @@ export default function Home() {
           >
             About
           </button>
+          <button
+            onClick={() => setPage('donate')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${page === 'donate' ? 'bg-[#1a3a5c] text-[#4a9eff]' : 'text-[#8899aa] hover:text-white hover:bg-[#1a1f2e]'}`}
+          >
+            Donate
+          </button>
         </nav>
       </header>
 
@@ -65,7 +91,6 @@ export default function Home() {
       {page === 'chat' && (
         <div className="flex-1 flex flex-col max-w-3xl w-full mx-auto px-4 pb-6">
 
-          {/* Welcome */}
           {messages.length === 0 && (
             <div className="flex-1 flex flex-col items-center justify-center text-center py-16 gap-6">
               <div className="w-16 h-16 rounded-2xl bg-[#1a3a5c] flex items-center justify-center text-3xl">🏘️</div>
@@ -92,7 +117,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Messages */}
           {messages.length > 0 && (
             <div className="flex-1 flex flex-col gap-4 py-6">
               {messages.map((msg, i) => (
@@ -147,7 +171,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Input */}
           <div className="sticky bottom-0 pt-4">
             <div className="flex gap-2 bg-[#0d1117] border border-[#1e2a3a] rounded-2xl p-2 focus-within:border-[#1a3a5c] transition-all">
               <input
@@ -201,8 +224,62 @@ export default function Home() {
             <div className="text-center text-[#4a5568] text-xs">
               <p>Mountain House Community Assistant</p>
               <p className="mt-1">Serving Mountain House, CA 95391</p>
-              <p className="mt-1">Made with ❤️ by a Mountain House kid, summer 2026</p>
+              <p className="mt-1">Made with care by a Mountain House kid, summer 2026</p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* DONATE PAGE */}
+      {page === 'donate' && (
+        <div className="flex-1 max-w-md w-full mx-auto px-4 py-12">
+          <div className="flex flex-col gap-6">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-2xl bg-[#1a3a5c] flex items-center justify-center text-3xl mx-auto mb-4">💙</div>
+              <h2 className="text-2xl font-semibold text-white mb-2">Support Mountain House Assistant</h2>
+              <p className="text-[#8899aa] text-sm">This tool is free for everyone in Mountain House. If it helped you, consider supporting it!</p>
+            </div>
+
+            <div className="bg-[#0d1117] border border-[#1e2a3a] rounded-2xl p-6 flex flex-col gap-4">
+              <p className="text-[#8899aa] text-sm text-center">Choose an amount</p>
+              <div className="grid grid-cols-3 gap-2">
+                {[3, 5, 10].map((a) => (
+                  <button
+                    key={a}
+                    onClick={() => { setAmount(a); setCustom('') }}
+                    className={`py-3 rounded-xl text-sm font-medium transition-all border ${
+                      amount === a && !custom
+                        ? 'bg-[#1a3a5c] border-[#4a9eff] text-white'
+                        : 'border-[#1e2a3a] text-[#8899aa] hover:border-[#4a9eff] hover:text-white'
+                    }`}
+                  >
+                    ${a}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2 bg-[#0a0a0f] border border-[#1e2a3a] rounded-xl px-4 py-2 focus-within:border-[#4a9eff] transition-all">
+                <span className="text-[#8899aa]">$</span>
+                <input
+                  type="number"
+                  placeholder="Custom amount"
+                  value={custom}
+                  onChange={e => { setCustom(e.target.value); setAmount(0) }}
+                  className="flex-1 bg-transparent text-white text-sm outline-none placeholder-[#4a5568]"
+                />
+              </div>
+              <button
+                onClick={() => handleDonate(custom ? parseInt(custom) : amount)}
+                disabled={donateLoading || (!amount && !custom)}
+                className="w-full bg-[#1a3a5c] hover:bg-[#1e4d7a] disabled:opacity-30 text-white rounded-xl py-3 font-medium transition-all"
+              >
+                {donateLoading ? 'Redirecting...' : `Donate $${custom || amount}`}
+              </button>
+            </div>
+
+            <p className="text-center text-[#4a5568] text-xs">
+              Payments processed securely by Stripe.<br />
+              Built with care by a Mountain House kid, summer 2026.
+            </p>
           </div>
         </div>
       )}
