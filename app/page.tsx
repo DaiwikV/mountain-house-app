@@ -52,19 +52,23 @@ export default function Home() {
 
       {/* HEADER */}
       <header className="border-b border-[#1e2a3a] bg-[#0d1117] px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+        
+        {/* LEFT — Logo + Donate button */}
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-[#1a3a5c] flex items-center justify-center text-lg">🏘️</div>
           <div>
             <h1 className="text-white font-semibold text-sm leading-none">Mountain House</h1>
             <p className="text-[#4a9eff] text-xs mt-0.5">Community Assistant</p>
-            <button
-              onClick={() => setPage('donate')}
-              className="text-[#8899aa] text-xs mt-0.5 hover:text-white transition-all block"
-            >
-              Support Us
-            </button>
           </div>
+          <button
+            onClick={() => setPage('donate')}
+            className="ml-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[#8899aa] text-xs hover:text-white hover:bg-white/10 transition-all"
+          >
+            Donate
+          </button>
         </div>
+
+        {/* RIGHT — Nav tabs */}
         <nav className="flex items-center gap-1">
           <button
             onClick={() => setPage('chat')}
@@ -86,16 +90,6 @@ export default function Home() {
           </button>
         </nav>
       </header>
- {/* SUPPORT BANNER */}
-      <div className="bg-[#0d1117] border-b border-[#1e2a3a] px-6 py-2 flex items-center justify-between">
-        <p className="text-[#8899aa] text-xs">Enjoying Mountain House Assistant?</p>
-        <button
-          onClick={() => setPage('donate')}
-          className="text-xs px-3 py-1 rounded-lg border border-[#1e2a3a] text-[#8899aa] hover:border-[#4a9eff] hover:text-white transition-all"
-        >
-          Support Us
-        </button>
-      </div>
 
       {/* CHAT PAGE */}
       {page === 'chat' && (
@@ -249,7 +243,6 @@ export default function Home() {
               <h2 className="text-2xl font-semibold text-white mb-2">Support Mountain House Assistant</h2>
               <p className="text-[#8899aa] text-sm">This tool is free for everyone in Mountain House. If it helped you, consider supporting it!</p>
             </div>
-
             <div className="bg-[#0d1117] border border-[#1e2a3a] rounded-2xl p-6 flex flex-col gap-4">
               <p className="text-[#8899aa] text-sm text-center">Choose an amount</p>
               <div className="grid grid-cols-3 gap-2">
@@ -285,7 +278,6 @@ export default function Home() {
                 {donateLoading ? 'Redirecting...' : `Donate $${custom || amount}`}
               </button>
             </div>
-
             <p className="text-center text-[#4a5568] text-xs">
               Payments processed securely by Stripe.<br />
               Built with care by a Mountain House kid, summer 2026.
