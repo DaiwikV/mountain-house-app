@@ -94,10 +94,19 @@ async function searchGooglePlaces(query: string) {
 
     if (!searchData.results?.length) return ''
 
-    // Get top 3 results
-    const places = searchData.results.slice(0, 3).map((place: any) => {
-      const stars = place.rating ? `⭐ ${place.rating}/5 (${place.user_ratings_total} reviews)` : 'No ratings yet'
-      const phone = place.formatted_phone_number || 'Call for number'
+// Sort by a score that weighs both rating AND number of reviews
+    const scored = searchData.results
+      .filter((p: any) => p.rating && p.user_ratings_total)
+      .map((place: any) => ({
+        ...place,
+        score: place.rating * Math.log10(place.user_ratings_total + 1)
+      }))
+      .sort((a: any, b: any) => b.score - a.score)
+      .slice(0, 3)
+
+    const places = scored.map((place: any) => {
+      const stars = `⭐ ${place.rating}/5 (${place.user_ratings_total.toLocaleString()} reviews)`
+      const phone = place.formatted_phone_number || 'Check Google for number'
       const address = place.formatted_address || ''
       const open = place.opening_hours?.open_now !== undefined
         ? place.opening_hours.open_now ? '🟢 Open now' : '🔴 Closed now'
