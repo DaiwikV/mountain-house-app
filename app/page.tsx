@@ -103,7 +103,11 @@ export default function Home() {
                       ? 'bg-[#1a3a5c] text-white rounded-tr-sm'
                       : 'bg-[#0d1117] border border-[#1e2a3a] text-[#d1d9e6] rounded-tl-sm'
                   }`}>
-                    {msg.content}
+                    {msg.content.split('\n').map((line, j) => (
+                      <p key={j} className={line.startsWith('-') || line.startsWith('•') ? 'mt-2' : 'mt-1'}>
+                        {line}
+                      </p>
+                    ))}
                   </div>
                   {msg.role === 'user' && (
                     <div className="w-7 h-7 rounded-lg bg-[#1e2a3a] flex items-center justify-center text-sm flex-shrink-0 mt-1">👤</div>
