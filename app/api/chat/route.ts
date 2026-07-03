@@ -240,7 +240,7 @@ ${searchResults || 'No results found.'}`
         'X-Title': 'Mountain House App',
       },
       body: JSON.stringify({
-        model: 'openrouter/free',
+        model: 'meta-llama/llama-3.1-8b-instruct',
         messages: [{ role: 'system', content: systemPrompt }, ...safeMessages],
       }),
     })
