@@ -42,6 +42,7 @@ export default function Home() {
           <div>
             <h1 className="text-white font-semibold text-sm leading-none">Mountain House</h1>
             <p className="text-[#4a9eff] text-xs mt-0.5">Community Assistant</p>
+            <a href="/donate" className="text-[#ff6b6b] text-xs mt-0.5 hover:underline">❤️ Donate</a>
           </div>
         </div>
         <nav className="flex items-center gap-1">
