@@ -1,7 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 
-type Message = { role: 'user' | 'assistant'; content: string }
+type Message = { role: 'user' | 'assistant'; content: string; suggestions?: string[] }
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([])
@@ -14,9 +14,10 @@ export default function Home() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const sendMessage = async () => {
-    if (!input.trim()) return
-    const newMessages: Message[] = [...messages, { role: 'user', content: input }]
+  const sendMessage = async (overrideInput?: string) => {
+    const text = overrideInput || input
+    if (!text.trim()) return
+    const newMessages: Message[] = [...messages, { role: 'user', content: text }]
     setMessages(newMessages)
     setInput('')
     setLoading(true)
@@ -27,7 +28,7 @@ export default function Home() {
       body: JSON.stringify({ messages: newMessages }),
     })
     const data = await res.json()
-    setMessages([...newMessages, { role: 'assistant', content: data.reply }])
+    setMessages([...newMessages, { role: 'assistant', content: data.reply, suggestions: data.suggestions }])
     setLoading(false)
   }
 
@@ -80,7 +81,7 @@ export default function Home() {
                 ].map((q) => (
                   <button
                     key={q}
-                    onClick={() => setInput(q)}
+                    onClick={() => sendMessage(q)}
                     className="text-left px-4 py-3 rounded-xl border border-[#1e2a3a] bg-[#0d1117] hover:border-[#1a3a5c] hover:bg-[#111827] text-[#8899aa] hover:text-white text-xs transition-all"
                   >
                     {q}
@@ -94,23 +95,38 @@ export default function Home() {
           {messages.length > 0 && (
             <div className="flex-1 flex flex-col gap-4 py-6">
               {messages.map((msg, i) => (
-                <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  {msg.role === 'assistant' && (
-                    <div className="w-7 h-7 rounded-lg bg-[#1a3a5c] flex items-center justify-center text-sm flex-shrink-0 mt-1">🏘️</div>
-                  )}
-                  <div className={`rounded-2xl px-4 py-3 max-w-[80%] text-sm leading-relaxed ${
-                    msg.role === 'user'
-                      ? 'bg-[#1a3a5c] text-white rounded-tr-sm'
-                      : 'bg-[#0d1117] border border-[#1e2a3a] text-[#d1d9e6] rounded-tl-sm'
-                  }`}>
-                    {msg.content.split('\n').map((line, j) => (
-                      <p key={j} className={line.startsWith('-') || line.startsWith('•') ? 'mt-2' : 'mt-1'}>
-                        {line}
-                      </p>
-                    ))}
+                <div key={i} className={`flex flex-col gap-2 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                  <div className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'} w-full`}>
+                    {msg.role === 'assistant' && (
+                      <div className="w-7 h-7 rounded-lg bg-[#1a3a5c] flex items-center justify-center text-sm flex-shrink-0 mt-1">🏘️</div>
+                    )}
+                    <div className={`rounded-2xl px-4 py-3 max-w-[80%] text-sm leading-relaxed ${
+                      msg.role === 'user'
+                        ? 'bg-[#1a3a5c] text-white rounded-tr-sm'
+                        : 'bg-[#0d1117] border border-[#1e2a3a] text-[#d1d9e6] rounded-tl-sm'
+                    }`}>
+                      {msg.content.split('\n').map((line, j) => (
+                        <p key={j} className={line.startsWith('-') || line.startsWith('•') ? 'mt-2' : 'mt-1'}>
+                          {line}
+                        </p>
+                      ))}
+                    </div>
+                    {msg.role === 'user' && (
+                      <div className="w-7 h-7 rounded-lg bg-[#1e2a3a] flex items-center justify-center text-sm flex-shrink-0 mt-1">👤</div>
+                    )}
                   </div>
-                  {msg.role === 'user' && (
-                    <div className="w-7 h-7 rounded-lg bg-[#1e2a3a] flex items-center justify-center text-sm flex-shrink-0 mt-1">👤</div>
+                  {msg.suggestions && (
+                    <div className="flex flex-wrap gap-2 ml-10">
+                      {msg.suggestions.map((s, j) => (
+                        <button
+                          key={j}
+                          onClick={() => sendMessage(s)}
+                          className="text-xs px-3 py-2 rounded-xl border border-[#1e2a3a] bg-[#0d1117] hover:border-[#4a9eff] hover:text-[#4a9eff] text-[#8899aa] transition-all"
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
                   )}
                 </div>
               ))}
@@ -141,7 +157,7 @@ export default function Home() {
                 onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
               />
               <button
-                onClick={sendMessage}
+                onClick={() => sendMessage()}
                 disabled={!input.trim() || loading}
                 className="bg-[#1a3a5c] hover:bg-[#1e4d7a] disabled:opacity-30 text-white rounded-xl px-4 py-2 text-sm font-medium transition-all"
               >
@@ -158,42 +174,34 @@ export default function Home() {
       {page === 'about' && (
         <div className="flex-1 max-w-3xl w-full mx-auto px-4 py-12">
           <div className="flex flex-col gap-8">
-
             <div className="text-center">
               <div className="w-16 h-16 rounded-2xl bg-[#1a3a5c] flex items-center justify-center text-3xl mx-auto mb-4">🏘️</div>
               <h2 className="text-2xl font-semibold text-white mb-2">About Mountain House Assistant</h2>
               <p className="text-[#8899aa] text-sm max-w-md mx-auto">Built by a neighbor, for the neighborhood.</p>
             </div>
-
             <div className="grid gap-4">
-
               <div className="bg-[#0d1117] border border-[#1e2a3a] rounded-2xl p-6">
                 <h3 className="text-white font-medium mb-2">👋 The Story</h3>
                 <p className="text-[#8899aa] text-sm leading-relaxed">This started as a summer break project by a 15 year old who lives right here in Mountain House. Tired of neighbors not knowing who to call when something breaks, he built a simple way to find trusted local help — no googling, no scrolling through random results, just real people from the community.</p>
               </div>
-
               <div className="bg-[#0d1117] border border-[#1e2a3a] rounded-2xl p-6">
                 <h3 className="text-white font-medium mb-2">🏘️ What This Is</h3>
                 <p className="text-[#8899aa] text-sm leading-relaxed">A neighborhood assistant built specifically for Mountain House. Ask it who fixes AC, when school starts, what's happening in the community — it only knows Mountain House stuff, because that's all that matters here.</p>
               </div>
-
               <div className="bg-[#0d1117] border border-[#1e2a3a] rounded-2xl p-6">
                 <h3 className="text-white font-medium mb-2">✅ Real People, Real Listings</h3>
                 <p className="text-[#8899aa] text-sm leading-relaxed">Every provider listed here is personally verified and actually based in Mountain House. No random results from Tracy or Stockton — just your actual neighbors who do this for a living.</p>
               </div>
-
               <div className="bg-[#0d1117] border border-[#1e2a3a] rounded-2xl p-6">
                 <h3 className="text-white font-medium mb-2">💼 Want to Be Listed?</h3>
                 <p className="text-[#8899aa] text-sm leading-relaxed">If you're a local service provider in Mountain House, reach out to get added. We're building the go-to resource for this community — one neighbor at a time.</p>
               </div>
-
             </div>
-
             <div className="text-center text-[#4a5568] text-xs">
               <p>Mountain House Community Assistant</p>
               <p className="mt-1">Serving Mountain House, CA 95391</p>
+              <p className="mt-1">Made with ❤️ by a Mountain House kid, summer 2026</p>
             </div>
-
           </div>
         </div>
       )}

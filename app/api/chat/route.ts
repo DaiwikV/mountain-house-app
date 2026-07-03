@@ -51,11 +51,29 @@ const MOUNTAIN_HOUSE_TOPICS = [
   'business', 'restaurant', 'food', 'store', 'shop', 'delivery',
   'emergency', 'police', 'fire', 'hospital', 'doctor', 'dentist',
   'who', 'where', 'when', 'how much', 'cost', 'price', 'hour',
-  'open', 'close', 'contact', 'phone', 'address', 'help'
+  'open', 'close', 'contact', 'phone', 'address', 'help',
+  'resturant', 'restarant', 'restraunt', 'resteraunt',
+  'plumber', 'electrician', 'gardener', 'handymen', 'contractor',
+  'near me', 'in mh', 'around here', 'in town', 'nearby',
+  'recommend', 'suggestion', 'best', 'good', 'top', 'find',
+  'need', 'looking', 'searching', 'anyone', 'somebody', 'someone',
+  'car', 'auto', 'mechanic', 'tow', 'dmv', 'license',
+  'gym', 'fitness', 'yoga', 'sport', 'recreation',
+  'hair', 'salon', 'barber', 'nail', 'spa',
+  'daycare', 'childcare', 'babysit', 'tutor',
+  'notary', 'tax', 'accountant', 'insurance',
+  'rent', 'lease', 'realtor', 'house', 'home',
+  'internet', 'wifi', 'cable', 'utility',
+  'noise', 'complaint', 'issue', 'problem',
+  'water', 'power', 'outage', 'gate', 'hoa',
+  'dance', 'class', 'lesson', 'team', 'group', 'club',
+  'pizza', 'burger', 'coffee', 'cafe', 'diner', 'takeout',
+  'park', 'trail', 'lake', 'playground', 'field',
 ]
 
 function isOffTopic(input: string): boolean {
   const lower = input.toLowerCase()
+  if (lower.split(' ').length <= 4) return false
   return !MOUNTAIN_HOUSE_TOPICS.some(topic => lower.includes(topic))
 }
 
@@ -88,9 +106,9 @@ async function searchMountainHouse(query: string) {
 async function searchGooglePlaces(query: string) {
   try {
     const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query + ' Mountain House CA 95391')}&key=${process.env.GOOGLE_PLACES_API_KEY}`
-    
+
     console.log('Calling Google Places for:', query)
-    
+
     const searchRes = await fetch(url)
     const searchData = await searchRes.json()
 
@@ -157,7 +175,13 @@ export async function POST(req: NextRequest) {
 
   if (isOffTopic(lastMessage)) {
     return NextResponse.json({
-      reply: "I'm only able to help with Mountain House, CA related topics — like local services, events, and community info. Try asking me something local! 🏘️"
+      reply: `Not sure what you're looking for! Did you mean:`,
+      suggestions: [
+        `${lastMessage} classes in Mountain House`,
+        `${lastMessage} events in Mountain House`,
+        `${lastMessage} teams or groups in Mountain House`,
+        `${lastMessage} services in Mountain House`,
+      ]
     })
   }
 
