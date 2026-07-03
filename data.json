@@ -1,37 +1,12 @@
 {
   "city": "Mountain House",
   "state": "CA",
+  "zip": "95391",
   "announcements": [
     {
       "title": "School Start Dates 2026",
       "details": "Elementary and Middle School starts August 6, 2026 at 8:00 AM. High School starts August 6, 2026 at 8:30 AM."
     }
   ],
-  "providers": [
-    {
-      "name": "John's AC & Heating",
-      "service": "AC repair and heating only. Does NOT do appliance or fridge repair.",
-      "phone": "(209) 555-0101"
-    },
-    {
-      "name": "Maria's Garden",
-      "service": "Gardening and landscaping only.",
-      "phone": "(209) 555-0102"
-    },
-    {
-      "name": "Fix-It Fast Appliances",
-      "service": "Fridge, washer, dryer, and appliance repair only.",
-      "phone": "(209) 555-0103"
-    },
-    {
-      "name": "Mountain House Plumbing",
-      "service": "All plumbing needs only.",
-      "phone": "(209) 555-0104"
-    },
-    {
-      "name": "Bright Electric",
-      "service": "Electrical work only.",
-      "phone": "(209) 555-0105"
-    }
-  ]
+  "providers": []
 }
