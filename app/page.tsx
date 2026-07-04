@@ -60,9 +60,9 @@ export default function Home() {
             <h1 className="text-white font-semibold text-sm leading-none">Mountain House</h1>
             <p className="text-[#4a9eff] text-xs mt-0.5">Community Assistant</p>
           </div>
-          <button
+        <button
             onClick={() => setPage('donate')}
-            className="ml-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[#8899aa] text-xs hover:text-white hover:bg-white/10 transition-all"
+            className="ml-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[#8899aa] text-xs hover:text-white hover:bg-white/10 transition-all hidden sm:block"
           >
             Donate
           </button>
