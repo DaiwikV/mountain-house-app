@@ -8,7 +8,7 @@ export default function Home() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [page, setPage] = useState<'chat' | 'about' | 'donate'>('chat')
-  const [amount, setAmount] = useState(5)
+  const [amount, setAmount] = useState(10)
   const [custom, setCustom] = useState('')
   const [donateLoading, setDonateLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -246,7 +246,7 @@ export default function Home() {
             <div className="bg-[#0d1117] border border-[#1e2a3a] rounded-2xl p-6 flex flex-col gap-4">
               <p className="text-[#8899aa] text-sm text-center">Choose an amount</p>
               <div className="grid grid-cols-3 gap-2">
-                {[3, 5, 10].map((a) => (
+                {[10, 20 , 50].map((a) => (
                   <button
                     key={a}
                     onClick={() => { setAmount(a); setCustom('') }}
