@@ -239,7 +239,7 @@ ${searchResults || 'No results found.'}`
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'llama3.2:3b',
+        model: 'google/gemini-flash-1.5',
         messages: [{ role: 'system', content: systemPrompt }, ...safeMessages],
       }),
       signal: AbortSignal.timeout(5000),
