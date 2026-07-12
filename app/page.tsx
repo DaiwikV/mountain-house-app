@@ -216,13 +216,16 @@ export default function Home() {
               </div>
               <div className="bg-[#0d1117] border border-[#1e2a3a] rounded-2xl p-6">
                 <h3 className="text-white font-medium mb-2">💼 Want to Be Listed?</h3>
-                <p className="text-[#8899aa] text-sm leading-relaxed mb-4">If you're a local service provider in Mountain House, apply to get added. We review all applications and add verified businesses for free.</p>
-                
-                  href="/apply"
-                  className="inline-block bg-[#1a3a5c] hover:bg-[#1e4d7a] text-white text-sm px-4 py-2 rounded-xl transition-all"
-                >
-                  Apply to Be Listed →
-                </a>
+                <p className="text-[#8899aa] text-sm leading-relaxed mb-4">
+  If you're a local service provider in Mountain House, apply to get added. We review all applications and add verified businesses for free.
+</p>
+
+<a
+  href="/apply"
+  className="inline-block bg-[#1a3a5c] hover:bg-[#1e4d7a] text-white text-sm px-4 py-2 rounded-xl transition-all"
+>
+  Apply to Be Listed →
+</a>
               </div>
             </div>
             <div className="text-center text-[#4a5568] text-xs">
