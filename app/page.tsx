@@ -52,23 +52,19 @@ export default function Home() {
 
       {/* HEADER */}
       <header className="border-b border-[#1e2a3a] bg-[#0d1117] px-6 py-4 flex items-center justify-between sticky top-0 z-50">
-        
-        {/* LEFT — Logo + Donate button */}
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-[#1a3a5c] flex items-center justify-center text-lg">🏘️</div>
           <div>
             <h1 className="text-white font-semibold text-sm leading-none">Mountain House</h1>
             <p className="text-[#4a9eff] text-xs mt-0.5">Community Assistant</p>
           </div>
-        <button
+          <button
             onClick={() => setPage('donate')}
             className="ml-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[#8899aa] text-xs hover:text-white hover:bg-white/10 transition-all hidden sm:block"
           >
             Donate
           </button>
         </div>
-
-        {/* RIGHT — Nav tabs */}
         <nav className="flex items-center gap-1">
           <button
             onClick={() => setPage('chat')}
@@ -94,7 +90,6 @@ export default function Home() {
       {/* CHAT PAGE */}
       {page === 'chat' && (
         <div className="flex-1 flex flex-col max-w-3xl w-full mx-auto px-4 pb-6">
-
           {messages.length === 0 && (
             <div className="flex-1 flex flex-col items-center justify-center text-center py-16 gap-6">
               <div className="w-16 h-16 rounded-2xl bg-[#1a3a5c] flex items-center justify-center text-3xl">🏘️</div>
@@ -194,7 +189,6 @@ export default function Home() {
             </div>
             <p className="text-center text-[#4a5568] text-xs mt-2">Mountain House Community Assistant — Local info only</p>
           </div>
-
         </div>
       )}
 
@@ -222,7 +216,13 @@ export default function Home() {
               </div>
               <div className="bg-[#0d1117] border border-[#1e2a3a] rounded-2xl p-6">
                 <h3 className="text-white font-medium mb-2">💼 Want to Be Listed?</h3>
-                <p className="text-[#8899aa] text-sm leading-relaxed">If you're a local service provider in Mountain House, reach out to get added. We're building the go-to resource for this community — one neighbor at a time.</p>
+                <p className="text-[#8899aa] text-sm leading-relaxed mb-4">If you're a local service provider in Mountain House, apply to get added. We review all applications and add verified businesses for free.</p>
+                
+                  href="/apply"
+                  className="inline-block bg-[#1a3a5c] hover:bg-[#1e4d7a] text-white text-sm px-4 py-2 rounded-xl transition-all"
+                >
+                  Apply to Be Listed →
+                </a>
               </div>
             </div>
             <div className="text-center text-[#4a5568] text-xs">
@@ -246,7 +246,7 @@ export default function Home() {
             <div className="bg-[#0d1117] border border-[#1e2a3a] rounded-2xl p-6 flex flex-col gap-4">
               <p className="text-[#8899aa] text-sm text-center">Choose an amount</p>
               <div className="grid grid-cols-3 gap-2">
-                {[10, 20 , 50].map((a) => (
+                {[10, 20, 50].map((a) => (
                   <button
                     key={a}
                     onClick={() => { setAmount(a); setCustom('') }}
