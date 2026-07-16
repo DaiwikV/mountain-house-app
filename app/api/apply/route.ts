@@ -1,37 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_ANON_KEY!
+)
 
 export async function POST(req: NextRequest) {
   const { name, service, phone, category, email } = await req.json()
 
-  // Validate required fields
   if (!name || !service || !phone || !category) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
-  // Read current data.json
-  const dataPath = path.join(process.cwd(), 'data.json')
-  const raw = fs.readFileSync(dataPath, 'utf-8')
-  const data = JSON.parse(raw)
+  const { data, error } = await supabase
+    .from('submissions')
+    .insert([
+      {
+        name: name.trim(),
+        service: service.trim(),
+        phone: phone.trim(),
+        category: category.trim(),
+        email: email?.trim() || '',
+      }
+    ])
+    .select()
 
-  // Add new provider
-  const newProvider = {
-    name: name.trim(),
-    service: service.trim(),
-    phone: phone.trim(),
-    category: category.trim(),
-    email: email?.trim() || '',
-    featured: false,
-    verified: false,
-    pending: true,
-    submittedAt: new Date().toISOString()
+  if (error) {
+    console.log('Supabase error:', error)
+    return NextResponse.json({ error: 'Failed to submit' }, { status: 500 })
   }
 
-  data.providers.push(newProvider)
-
-  // Save back to data.json
-  fs.writeFileSync(dataPath, JSON.stringify(data, null, 2))
-
-  return NextResponse.json({ success: true })
+  return NextResponse.json({ success: true, submission: data })
 }
