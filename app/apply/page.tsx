@@ -13,7 +13,8 @@ export default function ApplyPage() {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
 
-  const handleSubmit = async () => {
+  
+const handleSubmit = async () => {
     if (!form.name || !form.service || !form.phone || !form.category) {
       setError('Please fill in all required fields.')
       return
@@ -22,15 +23,19 @@ export default function ApplyPage() {
     setLoading(true)
     setError('')
 
-    const res = await fetch('/api/apply', {
+    const res = await fetch('https://formspree.io/f/mykreygv', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify({
+        name: form.name,
+        service: form.service,
+        phone: form.phone,
+        category: form.category,
+        email: form.email,
+      }),
     })
 
-    const data = await res.json()
-
-    if (data.success) {
+    if (res.ok) {
       setSubmitted(true)
     } else {
       setError('Something went wrong. Please try again.')
@@ -38,7 +43,6 @@ export default function ApplyPage() {
 
     setLoading(false)
   }
-
   if (submitted) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col items-center justify-center px-4">
