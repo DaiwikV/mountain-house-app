@@ -23,16 +23,10 @@ const handleSubmit = async () => {
     setLoading(true)
     setError('')
 
-    const res = await fetch('https://formspree.io/f/mykreygv', {
+   const res = await fetch('/api/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: form.name,
-        service: form.service,
-        phone: form.phone,
-        category: form.category,
-        email: form.email,
-      }),
+      body: JSON.stringify(form),
     })
 
     if (res.ok) {
