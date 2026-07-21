@@ -225,7 +225,7 @@ export default function Home() {
   className="inline-block bg-[#1a3a5c] hover:bg-[#1e4d7a] text-white text-sm px-4 py-2 rounded-xl transition-all"
 >
   Apply to Be Listed →
-</a>
+</a>  
               </div>
             </div>
             <div className="text-center text-[#4a5568] text-xs">
