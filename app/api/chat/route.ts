@@ -129,7 +129,24 @@ async function searchGooglePlaces(query: string) {
     console.log('Mountain House filtered count:', mountainHouseOnly.length)
 
     if (!mountainHouseOnly.length) {
-      return 'No businesses found directly in Mountain House 95391. Suggest checking nearby cities like Tracy or Manteca for more options.'
+      // Fall back to top 3 nearest results even if not directly in Mountain House
+      const scored = searchData.results
+        .filter((p: any) => p.rating && p.user_ratings_total)
+        .map((place: any) => ({
+          ...place,
+          score: place.rating * Math.log10(place.user_ratings_total + 1)
+        }))
+        .sort((a: any, b: any) => b.score - a.score)
+        .slice(0, 3)
+
+      const places = scored.map((place: any) => {
+        const stars = `⭐ ${place.rating}/5 (${place.user_ratings_total.toLocaleString()} reviews)`
+        const phone = place.formatted_phone_number || 'Check Google for number'
+        const address = place.formatted_address || ''
+        return `- ${place.name}: ${stars} | 📞 ${phone} | ${address} (nearby)`
+      }).join('\n')
+
+      return `No businesses found directly in Mountain House. Here are the closest options nearby:\n${places}`
     }
 
     const scored = mountainHouseOnly
@@ -219,8 +236,7 @@ Always answer in a short, clean list format like this:
 - Business Name — what they do
   ⭐ rating/5 (number reviews) | 📞 phone number
 Show maximum 3 results only. No long paragraphs. No extra symbols like >>>. Keep it clean and simple.
-ONLY show businesses that are actually located in Mountain House, CA 95391. Do NOT list businesses from Tracy, Stockton, Manteca, Rohnert Park, or any other city — even if they service Mountain House. If no Mountain House businesses are available, say so honestly and suggest the user check nearby cities.
-You NEVER give medical, legal, or financial advice.
+Prefer businesses in Mountain House, CA 95391. If none are available directly in Mountain House, show the closest nearby businesses (Tracy, Manteca, etc.) but mark them as "nearby" and mention they may service Mountain House.You NEVER give medical, legal, or financial advice.
 You NEVER share personal information about anyone.
 You NEVER make guarantees about service quality or pricing.
 Always add this disclaimer when recommending a service provider: "Please verify details directly with the provider as info may change."
