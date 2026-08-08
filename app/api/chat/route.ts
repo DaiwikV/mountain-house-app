@@ -105,7 +105,7 @@ async function searchMountainHouse(query: string) {
 // ---- GOOGLE PLACES ----
 async function searchGooglePlaces(query: string) {
   try {
-    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query + ' Mountain House CA 95391')}&key=${process.env.GOOGLE_PLACES_API_KEY}`
+    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query + ' Mountain House CA 95391')}&location=37.7963,-121.5427&radius=8000&key=${process.env.GOOGLE_PLACES_API_KEY}`
 
     console.log('Calling Google Places for:', query)
 
@@ -120,7 +120,19 @@ async function searchGooglePlaces(query: string) {
 
     if (!searchData.results?.length) return ''
 
-    const scored = searchData.results
+    // Filter to only Mountain House businesses
+    const mountainHouseOnly = searchData.results.filter((p: any) => {
+      const address = (p.formatted_address || '').toLowerCase()
+      return address.includes('mountain house') || address.includes('95391')
+    })
+
+    console.log('Mountain House filtered count:', mountainHouseOnly.length)
+
+    if (!mountainHouseOnly.length) {
+      return 'No businesses found directly in Mountain House 95391. Suggest checking nearby cities like Tracy or Manteca for more options.'
+    }
+
+    const scored = mountainHouseOnly
       .filter((p: any) => p.rating && p.user_ratings_total)
       .map((place: any) => ({
         ...place,
@@ -128,8 +140,6 @@ async function searchGooglePlaces(query: string) {
       }))
       .sort((a: any, b: any) => b.score - a.score)
       .slice(0, 3)
-
-    console.log('Scored places:', scored.map((p: any) => `${p.name} ${p.rating}⭐ (${p.user_ratings_total} reviews)`))
 
     const places = scored.map((place: any) => {
       const stars = `⭐ ${place.rating}/5 (${place.user_ratings_total.toLocaleString()} reviews)`
@@ -209,6 +219,7 @@ Always answer in a short, clean list format like this:
 - Business Name — what they do
   ⭐ rating/5 (number reviews) | 📞 phone number
 Show maximum 3 results only. No long paragraphs. No extra symbols like >>>. Keep it clean and simple.
+ONLY show businesses that are actually located in Mountain House, CA 95391. Do NOT list businesses from Tracy, Stockton, Manteca, Rohnert Park, or any other city — even if they service Mountain House. If no Mountain House businesses are available, say so honestly and suggest the user check nearby cities.
 You NEVER give medical, legal, or financial advice.
 You NEVER share personal information about anyone.
 You NEVER make guarantees about service quality or pricing.
@@ -223,8 +234,8 @@ ${announcements}
 Local Verified Service Providers (show these FIRST):
 ${providers || 'None yet.'}
 
-Google Places Results (real ratings and numbers — use these):
-${placesResults || 'No Places results found.'}
+Google Places Results (only Mountain House 95391 businesses):
+${placesResults || 'No Mountain House businesses found in Places.'}
 
 Web Search Results:
 ${searchResults || 'No results found.'}`
@@ -239,7 +250,7 @@ ${searchResults || 'No results found.'}`
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'google/gemini-flash-1.5',
+        model: 'llama3.2:3b',
         messages: [{ role: 'system', content: systemPrompt }, ...safeMessages],
       }),
       signal: AbortSignal.timeout(5000),
@@ -264,7 +275,7 @@ ${searchResults || 'No results found.'}`
         'X-Title': 'Mountain House App',
       },
       body: JSON.stringify({
-        model: 'meta-llama/llama-3.1-8b-instruct',
+        model: 'google/gemini-flash-1.5',
         messages: [{ role: 'system', content: systemPrompt }, ...safeMessages],
       }),
     })
