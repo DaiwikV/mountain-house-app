@@ -296,7 +296,7 @@ ${searchResults || 'No results found.'}`
         'X-Title': `${data.city} App`,
       },
       body: JSON.stringify({
-        model: 'google/gemini-flash-latest',
+        model: 'google/gemini-2.5-flash-lite',
         messages: [{ role: 'system', content: systemPrompt }, ...safeMessages],
       }),
     })
@@ -307,7 +307,11 @@ ${searchResults || 'No results found.'}`
       return NextResponse.json({ reply: result.choices[0].message.content })
     }
 
-    console.log('OpenRouter returned no content:', JSON.stringify(result).slice(0, 500))
+    console.log(
+      'OpenRouter status:', openRouterRes.status,
+      '| code:', result?.error?.code ?? 'none',
+      '| message:', result?.error?.message ?? 'none'
+    )
     return NextResponse.json({ reply: 'Sorry, I could not get a response. Please try again!' })
   } catch (e) {
     console.log('OpenRouter error:', e)
