@@ -1,7 +1,15 @@
 {
-  "city": "Mountain House",
-  "state": "CA",
-  "zip": "95391",
+  "Foster City": {
+    "city": "Foster City",
+    "state": "CA",
+    "zip": "94404",
+    "location": {
+      "lat": 37.5585,
+      "lng": -122.2711,
+      "radius": 8000,
+      "nearbyCities": ["San Mateo", "Belmont", "Redwood City"]
+    }
+  },
   "announcements": [
     {
       "title": "School Start Dates 2026",
