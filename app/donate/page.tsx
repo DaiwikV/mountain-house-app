@@ -1,17 +1,68 @@
 'use client'
-import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useState, useRef, useEffect } from 'react'
 
-function DonateContent() {
-  const [amount, setAmount] = useState(5)
-  const [custom, setCustom] = useState('')
+// Change this to match the "city" field in data.json
+const CITY = 'Mountain House'
+
+type Message = { role: 'user' | 'assistant'; content: string; suggestions?: string[] }
+
+const PENS = [
+  { name: 'Ink blue', value: '#2E4A7D' },
+  { name: 'Graphite', value: '#43403B' },
+  { name: 'Black',    value: '#1F1B16' },
+  { name: 'Crimson',  value: '#8C2F2F' },
+  { name: 'Forest',   value: '#2F5D3F' },
+]
+
+export default function Home() {
+  const [messages, setMessages] = useState<Message[]>([])
+  const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const searchParams = useSearchParams()
-  const success = searchParams.get('success')
-  const canceled = searchParams.get('canceled')
+  const [page, setPage] = useState<'chat' | 'about' | 'donate'>('chat')
+  const [amount, setAmount] = useState(10)
+  const [custom, setCustom] = useState('')
+  const [donateLoading, setDonateLoading] = useState(false)
+  const [ink, setInk] = useState(PENS[0].value)
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const saved = localStorage.getItem('ink')
+    if (saved && PENS.some(p => p.value === saved)) setInk(saved)
+  }, [])
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  const pickInk = (value: string) => {
+    setInk(value)
+    localStorage.setItem('ink', value)
+  }
+
+  const sendMessage = async (overrideInput?: string) => {
+    const text = overrideInput || input
+    if (!text.trim()) return
+    const newMessages: Message[] = [...messages, { role: 'user', content: text }]
+    setMessages(newMessages)
+    setInput('')
+    setLoading(true)
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: newMessages }),
+      })
+      const data = await res.json()
+      setMessages([...newMessages, { role: 'assistant', content: data.reply, suggestions: data.suggestions }])
+    } catch {
+      setMessages([...newMessages, { role: 'assistant', content: 'Something went wrong. Please try again.' }])
+    }
+    setLoading(false)
+  }
 
   const handleDonate = async (donateAmount: number) => {
-    setLoading(true)
+    setDonateLoading(true)
     const res = await fetch('/api/donate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -19,95 +70,295 @@ function DonateContent() {
     })
     const data = await res.json()
     if (data.url) window.location.href = data.url
-    setLoading(false)
+    setDonateLoading(false)
   }
 
-  return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col items-center justify-center px-4">
-      <div className="w-full max-w-md flex flex-col gap-6">
+  const tab = (id: typeof page, label: string) => (
+    <button
+      onClick={() => setPage(id)}
+      className="px-3 py-1.5 text-sm rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+      style={{
+        fontFamily: 'Karla, system-ui, sans-serif',
+        color: page === id ? 'var(--paper)' : 'var(--muted)',
+        background: page === id ? 'var(--ink)' : 'transparent',
+        outlineColor: 'var(--ink)',
+      }}
+    >
+      {label}
+    </button>
+  )
 
-        {/* Header */}
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-2xl bg-[#1a3a5c] flex items-center justify-center text-3xl mx-auto mb-4">❤️</div>
-          <h1 className="text-2xl font-semibold text-white mb-2">Support Mountain House Assistant</h1>
-          <p className="text-[#8899aa] text-sm">This tool is free for everyone in Mountain House. If it helped you, consider buying us a coffee!</p>
+  return (
+    <div
+      className="min-h-screen flex flex-col"
+      style={{
+        // @ts-expect-error CSS custom properties
+        '--paper': '#F8F5EE',
+        '--card': '#FFFDF8',
+        '--rule': '#E3DDD0',
+        '--muted': '#8A8478',
+        '--ink': ink,
+        background: 'var(--paper)',
+        color: 'var(--ink)',
+        fontFamily: 'Karla, system-ui, sans-serif',
+      }}
+    >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Karla:wght@400;500;700&display=swap');
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after { animation: none !important; transition: none !important; }
+        }
+        .serif { font-family: Fraunces, Georgia, serif; font-optical-sizing: auto; }
+      `}</style>
+
+      {/* HEADER */}
+      <header
+        className="sticky top-0 z-50 px-5 sm:px-8 py-4 flex items-center justify-between gap-4 flex-wrap"
+        style={{ background: 'var(--paper)', borderBottom: '1px solid var(--rule)' }}
+      >
+        <div className="flex items-baseline gap-3 min-w-0">
+          <h1 className="serif text-lg leading-none truncate" style={{ fontWeight: 600 }}>{CITY}</h1>
+          <span className="text-xs tracking-wide uppercase" style={{ color: 'var(--muted)', letterSpacing: '0.08em' }}>
+            Community Assistant
+          </span>
         </div>
 
-        {/* Success / Cancel messages */}
-        {success && (
-          <div className="bg-green-900/30 border border-green-500/30 rounded-2xl p-4 text-center">
-            <p className="text-green-400 font-medium">🎉 Thank you so much for your support!</p>
-            <p className="text-green-300/70 text-sm mt-1">Your donation helps keep Mountain House Assistant free for everyone.</p>
+        <div className="flex items-center gap-4">
+          {/* Pen picker — the signature */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs hidden sm:inline" style={{ color: 'var(--muted)' }}>Pen</span>
+            <div className="flex gap-1.5">
+              {PENS.map(pen => (
+                <button
+                  key={pen.value}
+                  onClick={() => pickInk(pen.value)}
+                  aria-label={pen.name}
+                  title={pen.name}
+                  className="w-4 h-4 rounded-full transition-transform hover:scale-125 focus-visible:outline-2 focus-visible:outline-offset-2"
+                  style={{
+                    background: pen.value,
+                    outlineColor: pen.value,
+                    boxShadow: ink === pen.value ? `0 0 0 2px var(--paper), 0 0 0 3.5px ${pen.value}` : 'none',
+                  }}
+                />
+              ))}
+            </div>
           </div>
-        )}
-        {canceled && (
-          <div className="bg-yellow-900/30 border border-yellow-500/30 rounded-2xl p-4 text-center">
-            <p className="text-yellow-400 font-medium">No worries!</p>
-            <p className="text-yellow-300/70 text-sm mt-1">Your donation was canceled. Feel free to try again anytime.</p>
-          </div>
-        )}
 
-        {/* Preset amounts */}
-        <div className="bg-[#0d1117] border border-[#1e2a3a] rounded-2xl p-6 flex flex-col gap-4">
-          <p className="text-[#8899aa] text-sm text-center">Choose an amount</p>
-          <div className="grid grid-cols-3 gap-2">
-            {[3, 5, 10].map((a) => (
+          <nav className="flex items-center gap-1">
+            {tab('chat', 'Chat')}
+            {tab('about', 'About')}
+            {tab('donate', 'Support')}
+          </nav>
+        </div>
+      </header>
+
+      {/* CHAT */}
+      {page === 'chat' && (
+        <div className="flex-1 flex flex-col max-w-2xl w-full mx-auto px-5 pb-6">
+          {messages.length === 0 && (
+            <div className="flex-1 flex flex-col items-center justify-center text-center py-20 gap-7">
+              <div>
+                <h2 className="serif text-4xl mb-3" style={{ fontWeight: 400 }}>Ask the neighborhood.</h2>
+                <p className="text-sm max-w-sm mx-auto leading-relaxed" style={{ color: 'var(--muted)' }}>
+                  Local services, events, and community info for {CITY} — nothing else.
+                </p>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-2 w-full max-w-lg">
+                {[
+                  `Who fixes AC in ${CITY}?`,
+                  'When does school start?',
+                  'Who can fix my fridge?',
+                  'When is garbage collection?',
+                ].map(q => (
+                  <button
+                    key={q}
+                    onClick={() => sendMessage(q)}
+                    className="text-left px-4 py-3 rounded-lg text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+                    style={{
+                      background: 'var(--card)',
+                      border: '1px solid var(--rule)',
+                      color: 'var(--muted)',
+                      outlineColor: 'var(--ink)',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--ink)'; e.currentTarget.style.borderColor = 'var(--ink)' }}
+                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.borderColor = 'var(--rule)' }}
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {messages.length > 0 && (
+            <div className="flex-1 flex flex-col gap-5 py-8">
+              {messages.map((msg, i) => (
+                <div key={i} className={`flex flex-col gap-2 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                  <span className="text-xs uppercase tracking-wider" style={{ color: 'var(--muted)', letterSpacing: '0.1em' }}>
+                    {msg.role === 'user' ? 'You' : CITY}
+                  </span>
+                  <div
+                    className="rounded-xl px-4 py-3 max-w-[85%] text-[15px] leading-relaxed"
+                    style={
+                      msg.role === 'user'
+                        ? { background: 'var(--ink)', color: 'var(--paper)' }
+                        : { background: 'var(--card)', border: '1px solid var(--rule)' }
+                    }
+                  >
+                    {msg.content.split('\n').map((line, j) => (
+                      <p key={j} className={line.trim().startsWith('-') || line.trim().startsWith('•') ? 'mt-2' : 'mt-1'}>
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+
+                  {msg.suggestions && (
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {msg.suggestions.map((s, j) => (
+                        <button
+                          key={j}
+                          onClick={() => sendMessage(s)}
+                          className="text-xs px-3 py-1.5 rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+                          style={{ border: '1px solid var(--rule)', color: 'var(--muted)', outlineColor: 'var(--ink)' }}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {loading && (
+                <div className="flex flex-col gap-2 items-start">
+                  <span className="text-xs uppercase tracking-wider" style={{ color: 'var(--muted)', letterSpacing: '0.1em' }}>{CITY}</span>
+                  <div className="rounded-xl px-4 py-3.5" style={{ background: 'var(--card)', border: '1px solid var(--rule)' }}>
+                    <div className="flex gap-1.5 items-center">
+                      {[0, 160, 320].map(d => (
+                        <div key={d} className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: 'var(--ink)', animationDelay: `${d}ms`, opacity: 0.5 }} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={bottomRef} />
+            </div>
+          )}
+
+          <div className="sticky bottom-0 pt-4" style={{ background: 'var(--paper)' }}>
+            <div
+              className="flex gap-2 items-center rounded-xl px-2 py-2"
+              style={{ background: 'var(--card)', border: '1px solid var(--rule)' }}
+            >
+              <input
+                className="flex-1 bg-transparent text-[15px] px-3 py-2 outline-none"
+                style={{ color: 'var(--ink)' }}
+                placeholder={`Ask about ${CITY}…`}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+              />
               <button
-                key={a}
-                onClick={() => setAmount(a)}
-                className={`py-3 rounded-xl text-sm font-medium transition-all border ${
-                  amount === a && !custom
-                    ? 'bg-[#1a3a5c] border-[#4a9eff] text-white'
-                    : 'border-[#1e2a3a] text-[#8899aa] hover:border-[#4a9eff] hover:text-white'
-                }`}
+                onClick={() => sendMessage()}
+                disabled={!input.trim() || loading}
+                className="rounded-lg px-4 py-2 text-sm font-medium transition-opacity disabled:opacity-25 focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ background: 'var(--ink)', color: 'var(--paper)', outlineColor: 'var(--ink)' }}
               >
-                ${a}
+                Send
               </button>
+            </div>
+            <p className="text-center text-xs mt-3" style={{ color: 'var(--muted)' }}>
+              Local info only. Verify details with providers directly.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ABOUT */}
+      {page === 'about' && (
+        <div className="flex-1 max-w-2xl w-full mx-auto px-5 py-14">
+          <h2 className="serif text-4xl mb-10" style={{ fontWeight: 400 }}>Built by a neighbor.</h2>
+          <div className="flex flex-col">
+            {[
+              { h: 'The story', p: `A summer project by a 15-year-old who lives here. Neighbors kept asking the same question — who do I call when something breaks? — so this answers it without the scroll through search results for towns that aren't ours.` },
+              { h: 'What it knows', p: `${CITY} and nothing else. Local services, school dates, community events. Ask it about anything further afield and it'll politely decline.` },
+              { h: 'Real listings', p: `Verified providers are actually based here. No filler results from three towns over dressed up as local.` },
+              { h: 'Get listed', p: `Run a service business here? Apply below. Listings are reviewed, and they're free.` },
+            ].map((s, i) => (
+              <div key={s.h} className="py-7" style={{ borderTop: i === 0 ? 'none' : '1px solid var(--rule)' }}>
+                <h3 className="serif text-xl mb-2" style={{ fontWeight: 600 }}>{s.h}</h3>
+                <p className="text-[15px] leading-relaxed" style={{ color: 'var(--muted)' }}>{s.p}</p>
+              </div>
             ))}
           </div>
+          
+            href="/apply"
+            className="inline-block mt-4 px-5 py-2.5 rounded-lg text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ background: 'var(--ink)', color: 'var(--paper)', outlineColor: 'var(--ink)' }}
+          >
+            Apply to be listed
+          </a>
+        </div>
+      )}
 
-          {/* Custom amount */}
-          <div className="flex items-center gap-2 bg-[#0a0a0f] border border-[#1e2a3a] rounded-xl px-4 py-2 focus-within:border-[#4a9eff] transition-all">
-            <span className="text-[#8899aa]">$</span>
-            <input
-              type="number"
-              placeholder="Custom amount"
-              value={custom}
-              onChange={e => { setCustom(e.target.value); setAmount(0) }}
-              className="flex-1 bg-transparent text-white text-sm outline-none placeholder-[#4a5568]"
-            />
+      {/* SUPPORT */}
+      {page === 'donate' && (
+        <div className="flex-1 max-w-md w-full mx-auto px-5 py-14">
+          <h2 className="serif text-4xl mb-3" style={{ fontWeight: 400 }}>Keep it free.</h2>
+          <p className="text-[15px] leading-relaxed mb-8" style={{ color: 'var(--muted)' }}>
+            This costs a few dollars a month to run. If it saved you a phone call, chip in.
+          </p>
+
+          <div className="rounded-xl p-6 flex flex-col gap-4" style={{ background: 'var(--card)', border: '1px solid var(--rule)' }}>
+            <div className="grid grid-cols-3 gap-2">
+              {[10, 20, 50].map(a => {
+                const active = amount === a && !custom
+                return (
+                  <button
+                    key={a}
+                    onClick={() => { setAmount(a); setCustom('') }}
+                    className="py-3 rounded-lg text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+                    style={{
+                      background: active ? 'var(--ink)' : 'transparent',
+                      color: active ? 'var(--paper)' : 'var(--muted)',
+                      border: `1px solid ${active ? 'var(--ink)' : 'var(--rule)'}`,
+                      outlineColor: 'var(--ink)',
+                    }}
+                  >
+                    ${a}
+                  </button>
+                )
+              })}
+            </div>
+
+            <div className="flex items-center gap-2 rounded-lg px-4 py-2.5" style={{ border: '1px solid var(--rule)' }}>
+              <span style={{ color: 'var(--muted)' }}>$</span>
+              <input
+                type="number"
+                placeholder="Other amount"
+                value={custom}
+                onChange={e => { setCustom(e.target.value); setAmount(0) }}
+                className="flex-1 bg-transparent text-sm outline-none"
+                style={{ color: 'var(--ink)' }}
+              />
+            </div>
+
+            <button
+              onClick={() => handleDonate(custom ? parseInt(custom) : amount)}
+              disabled={donateLoading || (!amount && !custom)}
+              className="w-full rounded-lg py-3 text-sm font-medium transition-opacity disabled:opacity-25 focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ background: 'var(--ink)', color: 'var(--paper)', outlineColor: 'var(--ink)' }}
+            >
+              {donateLoading ? 'Opening checkout…' : `Give $${custom || amount}`}
+            </button>
           </div>
 
-          {/* Donate button */}
-          <button
-            onClick={() => handleDonate(custom ? parseInt(custom) : amount)}
-            disabled={loading || (!amount && !custom)}
-            className="w-full bg-[#1a3a5c] hover:bg-[#1e4d7a] disabled:opacity-30 text-white rounded-xl py-3 font-medium transition-all"
-          >
-            {loading ? 'Redirecting to checkout...' : `Donate $${custom || amount}`}
-          </button>
+          <p className="text-xs mt-5" style={{ color: 'var(--muted)' }}>
+            Processed securely by Stripe.
+          </p>
         </div>
-
-        {/* Footer note */}
-        <p className="text-center text-[#4a5568] text-xs">
-          Payments are processed securely by Stripe. <br />
-          Mountain House Assistant — Built with ❤️ by a local kid
-        </p>
-
-        {/* Back button */}
-        <a href="/" className="text-center text-[#4a9eff] text-sm hover:underline">
-          ← Back to Assistant
-        </a>
-
-      </div>
+      )}
     </div>
-  )
-}
-
-export default function DonatePage() {
-  return (
-    <Suspense>
-      <DonateContent />
-    </Suspense>
   )
 }
