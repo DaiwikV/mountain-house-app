@@ -6,14 +6,6 @@ const CITY = 'Mountain House'
 
 type Message = { role: 'user' | 'assistant'; content: string; suggestions?: string[] }
 
-const PENS = [
-  { name: 'Ink blue', value: '#2E4A7D' },
-  { name: 'Graphite', value: '#43403B' },
-  { name: 'Black',    value: '#1F1B16' },
-  { name: 'Crimson',  value: '#8C2F2F' },
-  { name: 'Forest',   value: '#2F5D3F' },
-]
-
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -22,22 +14,11 @@ export default function Home() {
   const [amount, setAmount] = useState(10)
   const [custom, setCustom] = useState('')
   const [donateLoading, setDonateLoading] = useState(false)
-  const [ink, setInk] = useState(PENS[0].value)
   const bottomRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const saved = localStorage.getItem('ink')
-    if (saved && PENS.some(p => p.value === saved)) setInk(saved)
-  }, [])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
-
-  const pickInk = (value: string) => {
-    setInk(value)
-    localStorage.setItem('ink', value)
-  }
 
   const sendMessage = async (overrideInput?: string) => {
     const text = overrideInput || input
@@ -54,9 +35,15 @@ export default function Home() {
         body: JSON.stringify({ messages: newMessages }),
       })
       const data = await res.json()
-      setMessages([...newMessages, { role: 'assistant', content: data.reply, suggestions: data.suggestions }])
+      setMessages([
+        ...newMessages,
+        { role: 'assistant', content: data.reply, suggestions: data.suggestions },
+      ])
     } catch {
-      setMessages([...newMessages, { role: 'assistant', content: 'Something went wrong. Please try again.' }])
+      setMessages([
+        ...newMessages,
+        { role: 'assistant', content: 'Something went wrong. Please try again.' },
+      ])
     }
     setLoading(false)
   }
@@ -97,7 +84,7 @@ export default function Home() {
         '--card': '#FFFDF8',
         '--rule': '#E3DDD0',
         '--muted': '#8A8478',
-        '--ink': ink,
+        '--ink': '#2E4A7D',
         background: 'var(--paper)',
         color: 'var(--ink)',
         fontFamily: 'Karla, system-ui, sans-serif',
@@ -117,40 +104,22 @@ export default function Home() {
         style={{ background: 'var(--paper)', borderBottom: '1px solid var(--rule)' }}
       >
         <div className="flex items-baseline gap-3 min-w-0">
-          <h1 className="serif text-lg leading-none truncate" style={{ fontWeight: 600 }}>{CITY}</h1>
-          <span className="text-xs tracking-wide uppercase" style={{ color: 'var(--muted)', letterSpacing: '0.08em' }}>
+          <h1 className="serif text-lg leading-none truncate" style={{ fontWeight: 600 }}>
+            {CITY}
+          </h1>
+          <span
+            className="text-xs uppercase"
+            style={{ color: 'var(--muted)', letterSpacing: '0.08em' }}
+          >
             Community Assistant
           </span>
         </div>
 
-        <div className="flex items-center gap-4">
-          {/* Pen picker — the signature */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs hidden sm:inline" style={{ color: 'var(--muted)' }}>Pen</span>
-            <div className="flex gap-1.5">
-              {PENS.map(pen => (
-                <button
-                  key={pen.value}
-                  onClick={() => pickInk(pen.value)}
-                  aria-label={pen.name}
-                  title={pen.name}
-                  className="w-4 h-4 rounded-full transition-transform hover:scale-125 focus-visible:outline-2 focus-visible:outline-offset-2"
-                  style={{
-                    background: pen.value,
-                    outlineColor: pen.value,
-                    boxShadow: ink === pen.value ? `0 0 0 2px var(--paper), 0 0 0 3.5px ${pen.value}` : 'none',
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-
-          <nav className="flex items-center gap-1">
-            {tab('chat', 'Chat')}
-            {tab('about', 'About')}
-            {tab('donate', 'Support')}
-          </nav>
-        </div>
+        <nav className="flex items-center gap-1">
+          {tab('chat', 'Chat')}
+          {tab('about', 'About')}
+          {tab('donate', 'Support')}
+        </nav>
       </header>
 
       {/* CHAT */}
@@ -159,8 +128,13 @@ export default function Home() {
           {messages.length === 0 && (
             <div className="flex-1 flex flex-col items-center justify-center text-center py-20 gap-7">
               <div>
-                <h2 className="serif text-4xl mb-3" style={{ fontWeight: 400 }}>Ask the neighborhood.</h2>
-                <p className="text-sm max-w-sm mx-auto leading-relaxed" style={{ color: 'var(--muted)' }}>
+                <h2 className="serif text-4xl mb-3" style={{ fontWeight: 400 }}>
+                  Ask the neighborhood.
+                </h2>
+                <p
+                  className="text-sm max-w-sm mx-auto leading-relaxed"
+                  style={{ color: 'var(--muted)' }}
+                >
                   Local services, events, and community info for {CITY} — nothing else.
                 </p>
               </div>
@@ -181,8 +155,14 @@ export default function Home() {
                       color: 'var(--muted)',
                       outlineColor: 'var(--ink)',
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--ink)'; e.currentTarget.style.borderColor = 'var(--ink)' }}
-                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.borderColor = 'var(--rule)' }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.color = 'var(--ink)'
+                      e.currentTarget.style.borderColor = 'var(--ink)'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.color = 'var(--muted)'
+                      e.currentTarget.style.borderColor = 'var(--rule)'
+                    }}
                   >
                     {q}
                   </button>
@@ -194,8 +174,14 @@ export default function Home() {
           {messages.length > 0 && (
             <div className="flex-1 flex flex-col gap-5 py-8">
               {messages.map((msg, i) => (
-                <div key={i} className={`flex flex-col gap-2 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                  <span className="text-xs uppercase tracking-wider" style={{ color: 'var(--muted)', letterSpacing: '0.1em' }}>
+                <div
+                  key={i}
+                  className={`flex flex-col gap-2 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
+                >
+                  <span
+                    className="text-xs uppercase"
+                    style={{ color: 'var(--muted)', letterSpacing: '0.1em' }}
+                  >
                     {msg.role === 'user' ? 'You' : CITY}
                   </span>
                   <div
@@ -207,7 +193,14 @@ export default function Home() {
                     }
                   >
                     {msg.content.split('\n').map((line, j) => (
-                      <p key={j} className={line.trim().startsWith('-') || line.trim().startsWith('•') ? 'mt-2' : 'mt-1'}>
+                      <p
+                        key={j}
+                        className={
+                          line.trim().startsWith('-') || line.trim().startsWith('•')
+                            ? 'mt-2'
+                            : 'mt-1'
+                        }
+                      >
                         {line}
                       </p>
                     ))}
@@ -220,7 +213,11 @@ export default function Home() {
                           key={j}
                           onClick={() => sendMessage(s)}
                           className="text-xs px-3 py-1.5 rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
-                          style={{ border: '1px solid var(--rule)', color: 'var(--muted)', outlineColor: 'var(--ink)' }}
+                          style={{
+                            border: '1px solid var(--rule)',
+                            color: 'var(--muted)',
+                            outlineColor: 'var(--ink)',
+                          }}
                         >
                           {s}
                         </button>
@@ -232,11 +229,27 @@ export default function Home() {
 
               {loading && (
                 <div className="flex flex-col gap-2 items-start">
-                  <span className="text-xs uppercase tracking-wider" style={{ color: 'var(--muted)', letterSpacing: '0.1em' }}>{CITY}</span>
-                  <div className="rounded-xl px-4 py-3.5" style={{ background: 'var(--card)', border: '1px solid var(--rule)' }}>
+                  <span
+                    className="text-xs uppercase"
+                    style={{ color: 'var(--muted)', letterSpacing: '0.1em' }}
+                  >
+                    {CITY}
+                  </span>
+                  <div
+                    className="rounded-xl px-4 py-3.5"
+                    style={{ background: 'var(--card)', border: '1px solid var(--rule)' }}
+                  >
                     <div className="flex gap-1.5 items-center">
                       {[0, 160, 320].map(d => (
-                        <div key={d} className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: 'var(--ink)', animationDelay: `${d}ms`, opacity: 0.5 }} />
+                        <div
+                          key={d}
+                          className="w-1.5 h-1.5 rounded-full animate-bounce"
+                          style={{
+                            background: 'var(--ink)',
+                            animationDelay: `${d}ms`,
+                            opacity: 0.5,
+                          }}
+                        />
                       ))}
                     </div>
                   </div>
@@ -254,7 +267,7 @@ export default function Home() {
               <input
                 className="flex-1 bg-transparent text-[15px] px-3 py-2 outline-none"
                 style={{ color: 'var(--ink)' }}
-                placeholder={`Ask about ${CITY}…`}
+                placeholder={`Ask about ${CITY}...`}
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
@@ -263,7 +276,11 @@ export default function Home() {
                 onClick={() => sendMessage()}
                 disabled={!input.trim() || loading}
                 className="rounded-lg px-4 py-2 text-sm font-medium transition-opacity disabled:opacity-25 focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ background: 'var(--ink)', color: 'var(--paper)', outlineColor: 'var(--ink)' }}
+                style={{
+                  background: 'var(--ink)',
+                  color: 'var(--paper)',
+                  outlineColor: 'var(--ink)',
+                }}
               >
                 Send
               </button>
@@ -278,46 +295,76 @@ export default function Home() {
       {/* ABOUT */}
       {page === 'about' && (
         <div className="flex-1 max-w-2xl w-full mx-auto px-5 py-14">
-          <h2 className="serif text-4xl mb-10" style={{ fontWeight: 400 }}>Built by a neighbor.</h2>
+          <h2 className="serif text-4xl mb-10" style={{ fontWeight: 400 }}>
+            Built by a neighbor.
+          </h2>
           <div className="flex flex-col">
             {[
-              { h: 'The story', p: `A summer project by a 15-year-old who lives here. Neighbors kept asking the same question — who do I call when something breaks? — so this answers it without the scroll through search results for towns that aren't ours.` },
-              { h: 'What it knows', p: `${CITY} and nothing else. Local services, school dates, community events. Ask it about anything further afield and it'll politely decline.` },
-              { h: 'Real listings', p: `Verified providers are actually based here. No filler results from three towns over dressed up as local.` },
-              { h: 'Get listed', p: `Run a service business here? Apply below. Listings are reviewed, and they're free.` },
+              {
+                h: 'The story',
+                p: `A summer project by a 15-year-old who lives here. Neighbors kept asking the same question — who do I call when something breaks? — so this answers it without the scroll through search results for towns that aren't ours.`,
+              },
+              {
+                h: 'What it knows',
+                p: `${CITY} and nothing else. Local services, school dates, community events. Ask it about anything further afield and it'll politely decline.`,
+              },
+              {
+                h: 'Real listings',
+                p: `Verified providers are actually based here. No filler results from three towns over dressed up as local.`,
+              },
+              {
+                h: 'Get listed',
+                p: `Run a service business here? Apply below. Listings are reviewed, and they're free.`,
+              },
             ].map((s, i) => (
-              <div key={s.h} className="py-7" style={{ borderTop: i === 0 ? 'none' : '1px solid var(--rule)' }}>
-                <h3 className="serif text-xl mb-2" style={{ fontWeight: 600 }}>{s.h}</h3>
-                <p className="text-[15px] leading-relaxed" style={{ color: 'var(--muted)' }}>{s.p}</p>
+              <div
+                key={s.h}
+                className="py-7"
+                style={{ borderTop: i === 0 ? 'none' : '1px solid var(--rule)' }}
+              >
+                <h3 className="serif text-xl mb-2" style={{ fontWeight: 600 }}>
+                  {s.h}
+                </h3>
+                <p className="text-[15px] leading-relaxed" style={{ color: 'var(--muted)' }}>
+                  {s.p}
+                </p>
               </div>
             ))}
           </div>
-          
-            href="/apply"
+          <button
+            onClick={() => { window.location.href = '/apply' }}
             className="inline-block mt-4 px-5 py-2.5 rounded-lg text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ background: 'var(--ink)', color: 'var(--paper)', outlineColor: 'var(--ink)' }}
           >
             Apply to be listed
-          </a>
+          </button>
         </div>
       )}
 
       {/* SUPPORT */}
       {page === 'donate' && (
         <div className="flex-1 max-w-md w-full mx-auto px-5 py-14">
-          <h2 className="serif text-4xl mb-3" style={{ fontWeight: 400 }}>Keep it free.</h2>
+          <h2 className="serif text-4xl mb-3" style={{ fontWeight: 400 }}>
+            Keep it free.
+          </h2>
           <p className="text-[15px] leading-relaxed mb-8" style={{ color: 'var(--muted)' }}>
             This costs a few dollars a month to run. If it saved you a phone call, chip in.
           </p>
 
-          <div className="rounded-xl p-6 flex flex-col gap-4" style={{ background: 'var(--card)', border: '1px solid var(--rule)' }}>
+          <div
+            className="rounded-xl p-6 flex flex-col gap-4"
+            style={{ background: 'var(--card)', border: '1px solid var(--rule)' }}
+          >
             <div className="grid grid-cols-3 gap-2">
               {[10, 20, 50].map(a => {
                 const active = amount === a && !custom
                 return (
                   <button
                     key={a}
-                    onClick={() => { setAmount(a); setCustom('') }}
+                    onClick={() => {
+                      setAmount(a)
+                      setCustom('')
+                    }}
                     className="py-3 rounded-lg text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
                     style={{
                       background: active ? 'var(--ink)' : 'transparent',
@@ -332,13 +379,19 @@ export default function Home() {
               })}
             </div>
 
-            <div className="flex items-center gap-2 rounded-lg px-4 py-2.5" style={{ border: '1px solid var(--rule)' }}>
+            <div
+              className="flex items-center gap-2 rounded-lg px-4 py-2.5"
+              style={{ border: '1px solid var(--rule)' }}
+            >
               <span style={{ color: 'var(--muted)' }}>$</span>
               <input
                 type="number"
                 placeholder="Other amount"
                 value={custom}
-                onChange={e => { setCustom(e.target.value); setAmount(0) }}
+                onChange={e => {
+                  setCustom(e.target.value)
+                  setAmount(0)
+                }}
                 className="flex-1 bg-transparent text-sm outline-none"
                 style={{ color: 'var(--ink)' }}
               />
@@ -348,9 +401,13 @@ export default function Home() {
               onClick={() => handleDonate(custom ? parseInt(custom) : amount)}
               disabled={donateLoading || (!amount && !custom)}
               className="w-full rounded-lg py-3 text-sm font-medium transition-opacity disabled:opacity-25 focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ background: 'var(--ink)', color: 'var(--paper)', outlineColor: 'var(--ink)' }}
+              style={{
+                background: 'var(--ink)',
+                color: 'var(--paper)',
+                outlineColor: 'var(--ink)',
+              }}
             >
-              {donateLoading ? 'Opening checkout…' : `Give $${custom || amount}`}
+              {donateLoading ? 'Opening checkout...' : `Give $${custom || amount}`}
             </button>
           </div>
 
