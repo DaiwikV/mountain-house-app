@@ -1,24 +1,13 @@
 {
-  "Foster City": {
-    "city": "Foster City",
-    "state": "CA",
-    "zip": "94404",
-    "location": {
-      "lat": 37.5585,
-      "lng": -122.2711,
-      "radius": 8000,
-      "nearbyCities": ["San Mateo", "Belmont", "Redwood City"]
-    }
+  "city": "Foster City",
+  "state": "CA",
+  "zip": "94404",
+  "location": {
+    "lat": 37.5585,
+    "lng": -122.2711,
+    "radius": 8000,
+    "nearbyCities": ["San Mateo", "Belmont", "Redwood City"]
   },
-  "announcements": [
-    {
-      "title": "School Start Dates 2026",
-      "details": "Elementary and Middle School starts August 6, 2026 at 8:00 AM. High School starts August 6, 2026 at 8:30 AM."
-    },
-    {
-      "title": "4th of July Parade 2026",
-      "details": "The Mountain House 4th of July Parade starts at 9:00 AM on July 4th, 2026. Starts at Wicklund Elementary and goes through the main streets."
-    }
-  ],
+  "announcements": [],
   "providers": []
 }
